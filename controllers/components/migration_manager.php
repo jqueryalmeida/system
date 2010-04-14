@@ -1,11 +1,73 @@
 <?php
 
+/**
+ * MigrationManagerComponent
+ * =========================
+ * 
+ * Manages and executes database migration updates.
+ * 
+ * @author	alvin savoy
+ * @version	0.1
+ * 
+ * 
+ * Usage:
+ * ======
+ * 
+ * 1. Add this component to a controller.
+ * 
+ * 2. Create an action that will execute $this->MigrationManager->run();
+ *    This action is where you will execute migrations. Keep it secure.
+ * 
+ * 3. Each time you need to make a change to the database, create an action
+ *    in the controller, example:
+ *    
+ *    function _update_01_add_user_id_field($db) {
+ *    		$result = $db->execute("ALTER TABLE `event` ADD `user_id` INT(11) NULL AFTER `title`");
+			if (!$result) return false;
+ *    }
+ *    
+ * 4. Rules for migration functions:
+ *    Must fit the pattern _update_##_a_user_friendly_description()
+ *    Each migration function must contain a unique, incremental version number.
+ *    It is provided a database connection, but you can also use $this->loadModel()
+ *    and use model methods.
+ *    You must return false when an error occurs; this stops execution of migrations and leaves
+ *    the database version at the last successfull migration.
+ * 
+ * 5. This component will execute only the migrations necessary to keep the database up-to-date
+ *    with the migrations.
+ *    
+ * 6. There is currently no support for "down-grading".
+ * 
+ * 
+ * Configuration:
+ * ==============
+ * 
+ * schemaInfoTable		table to store database version ["system_schema_info"]
+ * pattern				regex to identify migration methods, and to retrieve version number ["#^_update_([0-9]+)#i"]
+ * dbConfig				database config to use ["default"]
+ * 
+ */
+
 App::import('ConnectionManager');
 class MigrationManagerComponent extends Object {
 	
+	/**
+	 * Name of this component
+	 * @var string
+	 */
 	var $name = 'MigrationManager';
 	
+	/**
+	 * Reference to Controller
+	 * @var AppController
+	 */
 	var $Controller = null;
+	
+	/**
+	 * Settings
+	 * @var array
+	 */
 	var $settings = array();
 	
 	/**
@@ -20,17 +82,12 @@ class MigrationManagerComponent extends Object {
 		$this->settings = Set::merge(
 			array(
 				'schemaInfoTable' => 'system_schema_info',
-				'clearCache' => true,
 				'timeLimit' => 10 * MINUTE,
 				'pattern' => '#^_update_([0-9]+)#i',
 				'dbConfig' => 'default',
 			),
 			$settings
 		);
-	}
-	
-	function reset() {
-		
 	}
 	
 	/**
@@ -111,9 +168,7 @@ sql;
 				'order' => null,
 				'group' => null,
 			);
-			$NoModel = '';
-			$sql = $db->buildStatement($query, $NoModel);
-			$result = $db->fetchRow($sql);
+			$result = $db->fetchRow($db->buildStatement($query, null));
 			
 			if (!empty($result['SchemaInfo']['version'])) {
 				return intval($result['SchemaInfo']['version']);
@@ -224,7 +279,6 @@ sql;
 	 * Runs missing migrations
 	 * 
 	 * @param $db
-	 * @return unknown_type
 	 */
 	function run($db=null) {
 		set_time_limit($this->settings['timeLimit']);
@@ -279,6 +333,13 @@ sql;
 		}
 	}
 	
+	/**
+	 * Executes a migration action
+	 * 
+	 * @param $db
+	 * @param $migration
+	 * @return bool success
+	 */
 	function executeMigration($db, $migration) {
 		if ($this->Controller->{$migration['method']}($db) !== false) {
 			$this->clearModelCache();
@@ -291,6 +352,10 @@ sql;
 		}
 	}
 	
+	/**
+	 * Clears CakePHP's model cache
+	 * 
+	 */
 	function clearModelCache() {
 		App::import('Folder');
 		$folder = new Folder(CACHE . 'models', true, 0755);
@@ -307,6 +372,13 @@ sql;
 		}
 	}
 	
+	/**
+	 * Sets version in database schema info table.
+	 * 
+	 * @param $db
+	 * @param $version
+	 * @return bool success
+	 */
 	function setVersion($db, $version) {
 		$sql = <<<sql
 			UPDATE `{$this->settings['schemaInfoTable']}` SET `version` = {$version} WHERE `id` = 1;
@@ -314,6 +386,11 @@ sql;
 		return $db->execute($sql);
 	}
 	
+	/**
+	 * Outputs a message
+	 * 
+	 * @param $msg
+	 */
 	function out($msg) {
 		echo "<pre>{$msg}</pre>";
 	}
