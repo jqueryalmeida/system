@@ -71,6 +71,7 @@
 	<div class='legend'>Actions</div>
 	<ul class="actions">
 		<li><?= $html->link('New Setting', array('action'=>'add'), array('class'=>'action-icon action-add action-add-system-setting')); ?></li>
+		<li><?= $html->link('Rebuild Configuration File', array('action'=>'admin_rebuild', 'admin'=>true, 'prefix'=>'admin'), array('class'=>'action-icon action-add action-add-system-setting')); ?></li>
 	</ul>
 </div> <!-- .fieldset-actions -->
 </div> <!-- .layout-2-column-2 -->

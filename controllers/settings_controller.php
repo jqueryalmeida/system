@@ -21,6 +21,7 @@ class SettingsController extends AppController {
 
 	var $paginate = array(
 		'limit'	=> 30,
+		//'sort'	=>array('SystemSetting.id'),
 	);
 
 
@@ -45,9 +46,10 @@ class SettingsController extends AppController {
 		$this->History->push();
 		
 		$options = array(
-			'order'=>array('SystemSetting.id'),
+			'order'=>array('SystemSetting.id'=>'asc'),
 		);
 		$this->paginate = am($this->paginate, $options);
+		$this->paginate = am($this->paginate, $this->params);
 		
 		$SystemSettings = $this->paginate('SystemSetting');
 		$this->set('SystemSettings', $SystemSettings);
@@ -116,6 +118,12 @@ class SettingsController extends AppController {
 		return $this->History->back();
 	}
 	
+	function admin_rebuild(){
+		$this->SystemSetting->serialize();
+		$this->SystemSetting->writeConfiguration();
+		$this->Messages->add('Settings rebuilt!', 'success');
+		$this->redirect($this->referer());
+	}
 	
 	function admin_clear_cache($confirm='') {
 		App::import('Core', 'Folder');

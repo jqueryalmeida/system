@@ -76,8 +76,6 @@ class SystemSetting extends AppModel {
 		); 
 		return $this->find('first', $options);
 	}
-
-
 	
 	
 	
