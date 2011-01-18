@@ -118,6 +118,9 @@ class SystemSetting extends AppModel {
                 'SystemSetting.key' => 'ASC',
             ),
         ));
+        
+        // Added timestamp
+        $list['modified'] = time();
         $serialized = serialize($list);
         
         $filePath = APP.'config'.DS.'settings.config';

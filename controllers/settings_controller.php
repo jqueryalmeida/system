@@ -129,7 +129,7 @@ class SettingsController extends AppController {
 		App::import('Core', 'Folder');
 		App::import('Core', 'File');
 
-		$folder = new Folder(APP . 'tmp' . DS . 'cache' . DS . env('HTTP_HOST'), true);
+		$folder = new Folder(CACHE, true);
 		$file_paths = $folder->findRecursive();
 
 		//pr('CLEARING CACHE');
