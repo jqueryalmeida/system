@@ -15,7 +15,11 @@
         }
     }else{
     	if (Configure::read('debug')>=1){
-    		debug('app/config/settings.config file doesn\'t exist. Please recreate this file!');
+    		echo '<pre>
+    			/app/config/settings.config file doesn\'t exist.
+    			This file can be automatically rebuilt by edit one of the settings in the backend!
+    			</pre>
+    			';
     	}    	
     }
 
