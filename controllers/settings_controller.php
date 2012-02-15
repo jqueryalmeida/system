@@ -227,13 +227,4 @@ class SettingsController extends SystemAppController {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
