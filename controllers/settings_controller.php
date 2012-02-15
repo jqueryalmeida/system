@@ -208,9 +208,9 @@ class SettingsController extends SystemAppController {
 			if (strpos($file_path, 'empty') !==false){
 				unset($file_paths[$key]);
 			}
-			if (strpos($file_path, 'cake_admin_menu') !==false){
+			/*if (strpos($file_path, 'cake_admin_menu') !==false){
 				unset($file_paths[$key]);
-			}
+			}*/
 		}
 		
 		if ($confirm){
