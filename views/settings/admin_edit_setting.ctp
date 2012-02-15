@@ -1,6 +1,6 @@
 <?php
 	$isAdd = (strpos($this->action, 'edit') === false);
-	$this->set('title_for_layout', ($isAdd ? 'Add' : 'Edit') . ' Setting');
+	$this->set('title_for_layout', 'New Setting');
 	
 ?>
 
@@ -23,81 +23,46 @@
 		<?php
 			if (!$isAdd) echo $form->input('id');
 			
-			echo "Current setting: " . $this->data['SystemSetting']['group'] . "." . $this->data['SystemSetting']['key'];
-			 
 			echo $form->input(
 				'group',
 				array(
-					'disabled'=> true,
+					'label'=>'Group <br/><small>A prefix required for grouping i.e. Site, Cms, Blog, Eblast, etc.</small>',
+					'maxLength'=>'64',
 				)
 			);
 			
 			echo $form->input(
 				'key',
 				array(
-					'disabled'=> true,
+					'label'=>'Key <br/><small>It\'s used for referencing to this setting. <br/> Group.key  <br/> i.e. Site.keywords</small>',
+					'maxLength'=>'64',
 				)
 			);
+			//echo "<div id='key-sample'></div>";
 			
-			
-			
-			$input_type = $this->data['SystemSetting']['input_type']; 
-			$field_title = $this->data['SystemSetting']['title'];
-			$field_desc = $this->data['SystemSetting']['description'];
-			
-			if (!blank($field_desc)){
-				$field_desc = "<br/><small>" . $field_desc . "</small>";				
-			}
-			
-			$field_options = array(
-				'type'	=>$input_type,
-				'label' => $field_title . $field_desc,			
-			);
-				
-			echo $form->input(
-				'value',
-				$field_options
-			);
-			
-			/*
 			echo $form->input(
 				'title',
 				array(
-					'label'=>$field_title,
+					'label'=>'Field Title <br/><small>This title will appear as a field name.</small>',
 				)
 			);
 			
 			echo $form->input(
 				'description',
 				array(
+					'label'=>'Field Description <br/><small>Hint</small>',
 				)
-			);*/
+			);
 			
-			/*
+			
 			echo $form->input(
 				'input_type',
 				array(
+					'type'		=>'select',
+					'options'	=> array('text'=>'Text', 'textarea'=>'Textarea', 'checkbox'=>'Checkbox (yes/no)'),
 				)
 			);
 			
-			echo $form->input(
-				'editable',
-				array(
-				)
-			);
-			
-			echo $form->input(
-				'weight',
-				array(
-				)
-			);
-			
-			echo $form->input(
-				'params',
-				array(
-				)
-			);
-			*/
 			
 		?>
 	</div>
@@ -105,7 +70,11 @@
 
 	<div class='submit'>
 		<?php
-			echo $form->submit('Save');
+			$title = 'Next';
+			if ($this->action = 'admin_edit_setting'){
+				$title = 'Save';
+			}
+			echo $form->submit($title);
 		?>
 	</div>
 	

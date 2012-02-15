@@ -8,9 +8,50 @@ class SystemSetting extends AppModel {
 	var $transactional = true;
 
 	var $actsAs = array(
+		'Shared.Multivalidatable',
 	);
 	
+	
+	
+	var $validate = array(
+		
+	);
+	
+	
+	var $validationSets = array(
+		'add_or_update_setting'=>array(
+				'group'=>array(
+					array(
+						'rule'			=>	array('notEmpty'),
+						'allowEmpty'	=> 	false,
+						'required'		=> true,
+						'message'		=> 	'Group cannot be blank',
+					),	
+					'No Spaces'=>array(
+						'rule'			=>	array('validateNoSpaces'),
+						'allowEmpty'	=> 	false,
+						'required'		=> true,
+						'message'		=> 	'Spaces not allowed',
+					),					
+				),
+				'key'=>array(
+					array(
+						'rule'			=>	array('notEmpty'),
+						'allowEmpty'	=> 	false,
+						'required'		=> true,
+						'message'		=> 	'Key cannot be blank',
+					),	
+					'No Spaces'=>array(
+						'rule'			=>	array('validateNoSpaces'),
+						'allowEmpty'	=> 	false,
+						'required'		=> true,
+						'message'		=> 	'Spaces not allowed',
+					),				
+				),
+		),
+	);
 
+	
 /*==============*/
 /* ASSOCIATIONS */
 /*==============*/
@@ -19,6 +60,17 @@ class SystemSetting extends AppModel {
 /*===========*/
 /* CALLBACKS */
 /*===========*/
+	
+	
+	function validateNoSpaces($value){
+		$array_keys = array_keys($value);
+		$val = $value[array_pop($array_keys)];
+		
+		if (preg_match('#[\s]#', $val)){
+			return false;
+		}
+		return true;
+	}
 
 	function beforeValidate($options=array()) {
 	
@@ -45,18 +97,37 @@ class SystemSetting extends AppModel {
 	public function afterSave($created) {
 		$this->serialize();
         
-        $this->writeConfiguration();
+        $this->writeFile();
     }
 
     public function afterDelete() {
-        $this->serialize();
-        $this->writeConfiguration();
+    	
+        $this->writeFile();
     }
 
 /*======*/
 /* CRUD */
 /*======*/
+    
+    function addSettingByAdmin($data) {
 
+    	$this->restoreDefaultValidation();
+    	$this->setValidation('add_or_update_setting');
+    	$this->create();
+		return $this->saveAll($data, array('validate'=>'first'));
+	}
+	function updateSettingByAdmin($id, $data) {
+		$this->validationErrors = array();
+		
+		$this->restoreDefaultValidation();
+		$this->setValidation('add_or_update_setting');
+		
+		$data['SystemSetting']['id'] = $id;
+		return $this->saveAll($data, array('validate'=>'first'));
+	}
+
+	
+	
 	function addByAdmin($data) {
         $this->create();
 		return $this->saveAll($data, array('validate'=>'first'));
@@ -81,7 +152,7 @@ class SystemSetting extends AppModel {
 	
 	
 	
-/**
+	/**
 	 * All key/value pairs are made accessible from Configure class
 	 *
 	 * @return void
@@ -89,6 +160,7 @@ class SystemSetting extends AppModel {
     public function writeConfiguration() {
         $settings = $this->find('all', array(
             'fields' => array(
+        		'SystemSetting.group',
                 'SystemSetting.key',
                 'SystemSetting.value',
             ),
@@ -102,22 +174,30 @@ class SystemSetting extends AppModel {
         }
     }
 	/**
-	 * Find list and save yaml dump in app/config/settings.yml file.
+	 * Find list and save the file 
 	 * Data required in bootstrap.
 	 *
 	 * @return void
 	 */
-    public function serialize() {
+    public function writeFile() {
 	    
-        $list = $this->find('list', array(
+        $settings = $this->find('all', array(
             'fields' => array(
+        		'group',
                 'key',
                 'value',
             ),
             'order' => array(
-                'SystemSetting.key' => 'ASC',
+                'SystemSetting.group' => 'ASC',
+            	'SystemSetting.key' => 'ASC',
             ),
         ));
+        
+        $list = array();
+        foreach($settings as $setting){
+        	$full_key	= $setting['SystemSetting']['group'] . '.' . $setting['SystemSetting']['key'];;
+        	$list[$full_key] = $setting['SystemSetting']['value'];
+        }
         
         // Added timestamp
         $list['modified'] = time();
@@ -127,6 +207,12 @@ class SystemSetting extends AppModel {
         App::import('Core', 'File');
         $file = new File($filePath, true);
         $file->write($serialized);
+        
+        // Update configuration
+        foreach($list as $key=>$val){
+        	Configure::write($key, $val);
+        }
+        
     }
 
 
