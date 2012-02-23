@@ -10,6 +10,26 @@ class SystemAppController extends AppController {
 	
 	function getAdminMenu() {
 		return array(
+			'Caching' => array(
+				'url' => array('plugin'=>'system', 'controller'=>'settings', 'action'=>'clear_cache', 'prefix'=>'admin'),
+				'permission' => 'Users',
+				'children' => array(
+					'Cache files' => array(
+						'url' => array('plugin'=>'system', 'controller'=>'settings', 'action'=>'clear_cache', 'prefix'=>'admin'),
+					),
+					
+				),				
+			),	
+			'File Manager' => array(
+				'url' => array('plugin'=>'system', 'controller'=>'filemanager', 'action'=>'index', 'prefix'=>'admin'),
+				'permission' => 'Users',
+				'children' => array(
+					'Files' => array(
+						'url' => array('plugin'=>'system', 'controller'=>'filemanager', 'action'=>'index', 'prefix'=>'admin'),
+					),
+					
+				),				
+			),	
 			'Settings' => array(
 				'url' => array('plugin'=>'system', 'controller'=>'settings', 'action'=>'index', 'prefix'=>'admin'),
 				'permission' => 'Users',
@@ -29,16 +49,7 @@ class SystemAppController extends AppController {
 					),
 				),				
 			),	
-			'Caching' => array(
-				'url' => array('plugin'=>'system', 'controller'=>'settings', 'action'=>'clear_cache', 'prefix'=>'admin'),
-				'permission' => 'Users',
-				'children' => array(
-					'Cache files' => array(
-						'url' => array('plugin'=>'system', 'controller'=>'settings', 'action'=>'clear_cache', 'prefix'=>'admin'),
-					),
-					
-				),				
-			),		
+				
 		);
 	}
 	
